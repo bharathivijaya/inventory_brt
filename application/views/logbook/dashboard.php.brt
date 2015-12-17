@@ -1,0 +1,323 @@
+<style>table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}</style><script type="text/javascript" src="<?php echo base_url();?>assets/js/sortable.js"></script>
+
+
+
+<table class="table table-striped" >
+<h3>Alerts</h3>
+
+	<thead class="dashboard-headings">
+	<tr>
+		<td>Alert Type</td>
+		<td>Product Name</td>
+		<td>Product NDC</td>
+		<td>Manufacturer</td>
+		<td>QOH</td>
+		<td>Lot Number</td>
+		<td>Expiration Date</td>
+		<td>Re-order Qty</td>
+		<td>Audit Date Due</td>
+		<td>Action</td>
+	</tr>
+	</thead>
+	<tbody>
+	<?foreach ($alerts as $alert) { ?>
+		<tr>
+			<td><?= @$alert['alertType'] ?></td>
+			<td><?= @$alert['productName'] ?></td>
+			<td><?= @$alert['productNDC'] ?></td>
+			<td><?= @$alert['manufacturer'] ?></td>
+			<td><?= @$alert['qoh'] ?></td>
+			<td><?= @$alert['lotNumber'] ?></td>
+			<td><?= @$alert['expirationDate'] ?></td>
+			<td><?= @$alert['reOrderQty'] ?></td>
+			<td><?= @$alert['auditDateDue'] ?></td>
+			<td>
+				<a href="/drug/view_drug/<?= $alert["drugId"] ?>">Edit</a>,
+				<a href="/logbook/add_entry_audit/<?= @$alert['productNDC'] ?>">Inventory Audit</a>, <br/>
+				<a href="/logbook/add_entry_in/<?= @$alert['productNDC'] ?>">Inventory In</a>
+			</td>
+		</tr>
+	<? } ?>
+	</tbody>
+</table>
+
+<h3>Entries</h3>
+<table>
+	<form name="entriessearchform" method="post" action="">
+	<tr style="background-color:white;border:0px;"><td>Start Date <input type="text" name="sdate1" class="datetimeST form-control" required=""></td>
+	<td>End Date <input type="text" name="sdate2" class="datetimeST form-control" required=""></td>
+	<td> <br><input  type="submit" value="Search" name="Search" class="btn btn-xs btn-primary"></td></tr>
+	</form></table>
+<table class="table table-striped sortable">
+    <thead class="dashboard-headings">
+    <tr>
+        <th>Date</th>
+        <th>Type of operation</th>
+        <th>Drug</th>
+        <td>NDC</td>
+        <th>RX/Trans /Invoice #</th>
+        <td>Transaction Quantity</td>
+        <td>Previous QOH</td>
+        <td>New QOH</td>
+        <th>Username</th>
+		  <td>Actions</td>
+    </tr>
+    </thead>
+    <tbody>
+    <?foreach ($last as $one) {?>
+       <tr>
+           <td><?=date('m-d-Y', $one['e_date'])?></td>
+           <td><?if (($one['e_type'] == 'new') ||($one['e_type'] == 'new')) {echo 'in';} else {echo $one['e_type'];}?></td>
+           <td><?=$one['d_name']?></td>
+           <td><?=$one['d_code']?></td>
+           <td><?=$one['e_rx']?></td>
+           <td><?if ($one['e_type'] == 'out') { echo $one['e_out'];} elseif ($one['e_type'] == 'new') { echo $one['d_size']*$one['e_numPacks'];} elseif ($one['e_type'] == 'return') {echo $one['e_returned'];}?></td>
+           <td><?=$one['e_old']?></td>
+           <td><?=$one['e_new']?></td>
+           <td><?=$one['username']?></td>
+		              <td><a href="#">View/Edit</a></td>
+       </tr>
+    <?}?>
+    </tbody>
+</table>
+
+<?if (!empty($negative)){ ?>
+	<!--
+    <h3>Alert! Negative quantity!</h3>
+    <table class="table">
+        <thead class="dashboard-headings" style="color: red">
+        <tr>
+            <td>Drug</td>
+            <td>NDC</td>
+            <td>Manufacturer</td>
+            <td>QOH</td>
+        </tr>
+        </thead>
+        <tbody>
+        <?foreach ($negative as $one) {?>
+            <tr>
+                <td><?=$one['d_name']?></td>
+                <td><?=$one['d_code']?></td>
+                <td><?=$one['d_manufacturer']?></td>
+                <td><?=$one['d_onHand']?></td>
+            </tr>
+        <?}?>
+        </tbody>
+    </table>
+	-->
+<?}?>
+
+<h3>Audits</h3>
+<table>
+	<form name="auditsearchform" method="post" action="">
+	<tr style="background-color:white;border:0px;"><td>Start Date <input type="text" name="date1" class="datetimeST form-control" required=""></td>
+	<td>End Date <input type="text" name="date2" class="datetimeST form-control" required=""></td>
+	<td> <br><input  type="submit" value="Search" name="Search" class="btn btn-xs btn-primary"></td></tr>
+	</form></table>
+<table class="table table-striped sortable">
+    <thead class="dashboard-headings">
+
+    <tr>
+        <th>Date</th>
+        <th>Drug Name</th>
+        <th>NDC</th>
+        <th>Manufacturer</th>
+        <th>Expected QOH</th>
+        <th>Actual QOH</th>
+        <th>Difference</th>
+        <th>Username</th>
+        <th>Notes</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?foreach ($audits as $one) {?>
+        <tr>
+            <td><?=date('m-d-Y', $one['e_date'])?></td>
+            <td><?=$one['d_name']?></td>
+            <td><?=$one['d_code']?>&nbsp;<a href="#">View Lots</a></td>
+            <td><?=$one['d_manufacturer']?></td>
+            <td><?=$one['e_old']?></td>
+            <td><?=$one['e_new']?></td>
+            <td><?=$one['e_new']-$one['e_old']?></td>
+            <td><?=$one['username']?></td>
+            <td><?=$one['e_note']?></td>
+        </tr>
+    <?}?>
+    </tbody>
+</table>
+
+
+
+<br><br>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.1.1/jstree.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.1.1/themes/default/style.min.css" rel="stylesheet">
+
+<script>
+	function initTree()
+	{
+		$('#jstree').jstree({
+			'core': {
+				'data': <?= json_encode($catlist); ?>
+			}
+		});
+
+		$("#jstree").bind(
+			"changed.jstree", function(evt, data){
+				console.log(data.selected);
+				$("#catList").val(data.selected);
+			}
+		);
+	}
+
+    $(document).ready(function() {
+        //$('#secondDate').hide();
+        //$('#firstDateLabel1').hide();
+        //$('#dPar').hide();
+        //$('#vPar').hide();
+
+		initTree();
+
+		$('#catListBlock').hide();
+		$('#ndcInputBlock').hide();
+		$('#drugNameBlock').hide();
+    });
+/*
+    $( ".radios" ).change(function() {
+        $('#secondDate').toggle();
+        $('#firstDateLabel1').toggle();
+        $('#firstDateLabel2').toggle();
+    });
+*/
+    $( "#selectType" ).change(function() {
+        var type = $(this).val();
+
+		$('#catListBlock').hide();
+		$('#ndcInputBlock').hide();
+		$('#drugNameBlock').hide();
+
+        if ((type == 'drug') || (type == 'vendor')) {
+            $('#dateRow').find('input').attr('disabled', true);
+            $('#firstDate').find('input').attr('required', false);
+            //$( ".radios" ).attr('disabled', true);
+            if (type == 'drug'){
+                $('.notDrug').hide();
+                $('.vendor').hide();
+                $('.notVendor').show();
+                $('.drug').show();
+                $('.autoDrug').prop('checked', true);
+                $(':not(.autoDrug)').prop('checked', false);
+                /*$('#fSelect').find('option').attr('disabled', true);
+                $('.dOption').attr('disabled', false);
+                $('#dFirstOption').attr('selected', true);*/
+            } else {//vendor
+                $('.vendor').show();
+                $('.notVendor').hide();
+                $('.autoVendor').prop('checked', true);
+                $(':not(.autoVendor)').prop('checked', false);
+                /*$('#fSelect').find('option').attr('disabled', true);
+                $('#vOption').attr('disabled', false);
+                $('#vOption').attr('selected', true);*/
+            }
+        } else {
+            $('#dateRow').find('input').attr('disabled', false);
+            $('#firstDate').find('input').attr('required', true);
+            //$( ".radios" ).attr('disabled', false);
+            $('.vendor').hide();
+            $('.notVendor').show();
+
+			if (["cat", "ndc", "dname"].indexOf(type) != -1)
+			{
+				$('.in').show();
+				$('.out').show();
+				$('.audit').show();
+				$('.notAll').hide();
+				$('.autoAll').prop('checked', true);
+				$(':not(.autoAll)').prop('checked', false);
+			}
+
+			if (type == 'cat') {
+				$('#catListBlock').show();
+			}
+
+			if (type == 'ndc') {
+				$('#ndcInputBlock').show();
+			}
+
+			if (type == 'dname') {
+				$('#drugNameBlock').show();
+			}
+
+            if (type == 'in') {
+                $('.in').show();
+                $('.notIn').hide();
+                $('.autoIn').prop('checked', true);
+                $(':not(.autoIn)').prop('checked', false);
+            }
+            else if (type == 'out') {
+                $('.out').show();
+                $('.notOut').hide();
+                $('.autoOut').prop('checked', true);
+                $(':not(.autoOut)').prop('checked', false);
+            }
+            else if (type == 'audit') {
+                $('.audit').show();
+                $('.notAudit').hide();
+                $('.autoAudit').prop('checked', true);
+                $(':not(.autoAudit)').prop('checked', false);
+            }
+            else if (type == 'all') {
+                $('.in').show();
+                $('.out').show();
+                $('.audit').show();
+                $('.notAll').hide();
+                $('.autoAll').prop('checked', true);
+                $(':not(.autoAll)').prop('checked', false);
+            }
+            //$('#fSelect').find('option').attr('disabled', false);
+        }
+        //console.log(type);
+    });
+
+	initSearchDrugs("drugName");
+
+	function initSearchDrugs(field)
+	{
+		$("#" + field).autocomplete({
+			source: function( request, response ) {
+				$.ajax({
+					url: "/drug/getJSON/",
+					dataType: "json",
+					data: {
+						q: request.term,
+						type: "report"
+					},
+					success: function( data ) {
+						response( data );
+					}
+				});
+			},
+			minLength: 1,
+			select: function( event, ui ) {
+				var id = ui.item.label.split(" - ");
+				setTimeout(function() {
+					$("#" + field).val(id[0]);
+				}, 100);
+			},
+			open: function() {
+				$( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+			},
+			close: function() {
+				$( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+			}
+		});
+	}
+
+    $('.datetimeST').datetimepicker({
+        pickDate: true,
+        pickTime: false,
+        format: 'MM/DD/YYYY',
+        maxDate: '<?=date('m-d-Y', strtotime('today'))?>'
+    });
+</script>

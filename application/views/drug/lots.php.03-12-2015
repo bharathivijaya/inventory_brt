@@ -1,0 +1,147 @@
+<style>table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}</style><script type="text/javascript" src="<?php echo base_url();?>assets/js/sortable.js"></script>
+<h2><?=$drug['d_name']?></h2>
+
+<a href="<?=base_url()?>drug/view_drug/<?=$drug['d_id']?>">Product Info</a> |
+<a href="<?=base_url()?>drug/inventory_in/<?=$drug['d_id']?>">Inventory In</a> |
+<a href="<?=base_url()?>drug/inventory_out/<?=$drug['d_id']?>">Inventory Out</a> |
+<a href="<?=base_url()?>drug/inventory_audit/<?=$drug['d_id']?>">Inventory Audit</a> |
+<b>Inventory Lot Tracking</b> |
+<a href="<?=base_url()?>drug/alerts/<?=$drug['d_id']?>">Alert History</a> |
+<a href="<?=base_url()?>drug/add_alert/<?=$drug['d_id']?>">Alert Settings</a> 
+<!-- | <a href="<?=base_url()?>category/add_drug_category/<?= $drug['d_id'] ?>">Add Category</a>-->
+<br/><br/>
+<div class="form-group">
+    <div >
+        <label>
+        Lot tracking Status:
+			
+			<?php if($drug['d_lotTracking'] == 1) { echo "<span id=lotstatus> Enabled</span>"; ?><br><br>	<input type="button" id="lotTrack" name="lotTrack" onclick="setLotTracking(false);" value="Change Status" class="btn btn-xs btn-primary" style="background-color:green; color: #FFF;"><?php } ?>
+	<?php if($drug['d_lotTracking'] == 0) { echo "<span id=lotstatus> Disabled</span>"; ?>	<br><br><input type="button" id="lotTrack" name="lotTrack" onclick="setLotTracking(true);" value="Change Status" class="btn btn-xs btn-primary" style="background-color:red; color: #FFF;"><?php } ?>
+
+	   </label>
+    </div>
+</div><br>
+<? $total = 0; foreach ($lots as $lot) { $total += $lot["count"] * 1; }?>
+<table>
+<tr ><!--<td>Search</td>--><td> <form name="searchform" id="searchform" method="post" action=""><input type="text" name="searchfield" id="searchfield" placeholder="Enter Lot Number" ></td>
+
+<td style="width:40%;align:left;"><input type="submit" class="btn btn-xs btn-primary" value="Search"></form></td>
+<td style="width:40%;align:right;"><b>Total Quantity of Lots: </b> <?= $total ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b>Quantity on Hand: </b> <?= $drug['d_onHand']; ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b>Variance: </b> <?= $total - $drug['d_onHand']; ?></td><td style="width:20%;align:left;">
+<form name="editlotform" id="editlotform" method="post" action="<?php echo base_url();?>logbook/add_entry_audit">
+<input type="hidden" name="ndc" id="ndc" value="<?php echo $drug['d_code'];?>">
+<input type="submit" class="btn btn-xs btn-primary" value="Edit Lot">
+</form>
+</td></tr><br>
+
+</table>
+
+
+<table  class="table table-striped sortable">
+
+	
+	<thead class="dashboard-headings">
+	
+	<tr>
+		<td>Lot Number</td>
+		<th>Expiration Date 	 <!--<form name="expsortform" id="expsortform" method="post" action="">
+		   <select name="view" id="view" onchange="this.form.submit()"><? if(isset($_POST['view'] ) && $_POST['view']!="") {?>
+		   <option value="<?php echo $_POST['view'];?>"><?php echo $_POST['view'];?></option>
+		   <? } ?>
+		   <option value="" disabled>Select</option>
+		    <option value="desc">desc</option>
+		   <option value="asc">asc</option>
+		 
+		   </select>-->
+		   </th>
+		<td>QOH per Lot Number
+		   </td>
+		<th style="width: 10%;">Status<!--<select name="statusview" id="statusview" onchange="this.form.submit()">
+		<? if(isset($_POST['statusview'] ) && $_POST['statusview']!="") {?>
+		   <option value="<?php echo $_POST['statusview'];?>"><?php echo $_POST['statusview'];?></option>
+		   <? } ?>
+		   <option value="" disabled>Select</option>
+		     <option value="Active">Active</option>
+		    <option value="Inactive">Inactive</option>
+			<option value="All">All</option>
+		 
+		 
+		   </select></form>--></th>
+		<td style="width: 10%;">Actions</td>
+	</tr>
+	</thead>
+	<tbody>
+	<? $total = 0; foreach ($lots as $lot) { $total += $lot["count"] * 1; ?>
+		<tr>
+			<td><?= $lot['lotName'] ?></td>
+			<td><?= date("m/d/Y", $lot['expirationDate']) ?></td>
+			<td><?= $lot["count"] ?></td>
+			<td id="lot_status_<?= $lot["id"] ?>"><? if ($lot["active"]) echo "Active"; else echo "Inactive"; ?></td>
+			<td><!--<a id="lot_edit_<?= $lot["id"] ?>" onclick="updateLotStatus(<?= $lot["id"] ?>);" href="javascript://void();"><? if ($lot["active"]) echo "Deactivate"; else echo "Activate"; ?></a>-->
+			<input type="button" id="lot_edit_<?= $lot["id"] ?>" name="lot_edit_<?= $lot["id"] ?>" onclick="updateLotStatus(<?= $lot["id"] ?>);" value="Change Status" class="btn btn-xs btn-primary" style="background-color:<?php if($lot["active"]) echo "green;";else echo "red;";?> color: #FFF;">
+			</td>
+		</tr>
+	<? } ?>
+<br/>
+	</tbody>
+</table>
+
+<script>
+	function updateLotStatus(lot_id)
+	{
+		$.ajax({
+			url: "/drug/swapLotStatus",
+			dataType: "text",
+			method: "POST",
+			data: {
+				"lot_id": lot_id
+			},
+			success: function(data)
+			{
+				if ($("#lot_status_" + lot_id).html() == "Active")
+				{
+					//$("#lot_edit_" + lot_id).html("Activate");
+					$("#lot_edit_" + lot_id).css({"background-color":"red"});
+						//$("#lotTrack").css({"background-color":"green"});
+					$("#lot_status_" + lot_id).html("Inactive");
+				} else {
+					$("#lot_edit_" + lot_id).css({"background-color":"green"});
+					//$("#lot_edit_" + lot_id).html("Deactivate");
+					$("#lot_status_" + lot_id).html("Active");
+				}
+			}
+		});
+	}
+
+    function setLotTracking(val)
+    {
+		
+        $.ajax({
+            url: "/drug/setLotTracking",
+            dataType: "text",
+            method: "POST",
+            data: {
+                "drug_id": <?= @$drug["d_id"] ?>,
+                "status": val
+            },
+            success: function(data) {
+               
+				if($("#lotstatus").html()=="Disabled")
+					{
+
+				//$("#lotTrack").val("Enable");
+				$("#lotTrack").css({"background-color":"green"});
+				$("#lotstatus").html("Enabled");
+					}
+				else {
+						$("#lotTrack").css({"background-color":"red"});
+					//$("#lotTrack").val("Disable");
+				$("#lotstatus").html("Disabled");
+				}
+            }
+        });
+    }
+</script>

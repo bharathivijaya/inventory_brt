@@ -1,0 +1,130 @@
+<h2>Dashboard</h2>
+
+<h3>Alerts</h3>
+<table class="table table-striped">
+	<thead class="dashboard-headings">
+	<tr>
+		<td>Alert Type</td>
+		<td>Product Name</td>
+		<td>Product NDC</td>
+		<td>Manufacturer</td>
+		<td>QOH</td>
+		<td>Lot Number</td>
+		<td>Expiration Date</td>
+		<td>Re-order Qty</td>
+		<td>Audit Date Due</td>
+		<td>Action</td>
+	</tr>
+	</thead>
+	<tbody>
+	<?foreach ($alerts as $alert) { ?>
+		<tr>
+			<td><?= @$alert['alertType'] ?></td>
+			<td><?= @$alert['productName'] ?></td>
+			<td><?= @$alert['productNDC'] ?></td>
+			<td><?= @$alert['manufacturer'] ?></td>
+			<td><?= @$alert['qoh'] ?></td>
+			<td><?= @$alert['lotNumber'] ?></td>
+			<td><?= @$alert['expirationDate'] ?></td>
+			<td><?= @$alert['reOrderQty'] ?></td>
+			<td><?= @$alert['auditDateDue'] ?></td>
+			<td>
+				<a href="/drug/view_drug/<?= $alert["drugId"] ?>">Edit</a>,
+				<a href="/logbook/add_entry_audit/<?= @$alert['productNDC'] ?>">Inventory Audit</a>, <br/>
+				<a href="/logbook/add_entry_in/<?= @$alert['productNDC'] ?>">Inventory In</a>
+			</td>
+		</tr>
+	<? } ?>
+	</tbody>
+</table>
+
+<h3>Last entries</h3>
+<table class="table table-striped">
+    <thead class="dashboard-headings">
+    <tr>
+        <td>Date</td>
+        <td>Type of operation</td>
+        <td>Drug</td>
+        <td>NDC</td>
+        <td>RX/Transaction #</td>
+        <td>Transaction Quantity</td>
+        <td>Previous QOH</td>
+        <td>New QOH</td>
+        <td>Username</td>
+    </tr>
+    </thead>
+    <tbody>
+    <?foreach ($last as $one) {?>
+       <tr>
+           <td><?=date('m-d-Y', $one['e_date'])?></td>
+           <td><?if (($one['e_type'] == 'new') ||($one['e_type'] == 'new')) {echo 'in';} else {echo $one['e_type'];}?></td>
+           <td><?=$one['d_name']?></td>
+           <td><?=$one['d_code']?></td>
+           <td><?=$one['e_rx']?></td>
+           <td><?if ($one['e_type'] == 'out') { echo $one['e_out'];} elseif ($one['e_type'] == 'new') { echo $one['d_size']*$one['e_numPacks'];} elseif ($one['e_type'] == 'return') {echo $one['e_returned'];}?></td>
+           <td><?=$one['e_old']?></td>
+           <td><?=$one['e_new']?></td>
+           <td><?=$one['username']?></td>
+       </tr>
+    <?}?>
+    </tbody>
+</table>
+
+<?if (!empty($negative)){ ?>
+	<!--
+    <h3>Alert! Negative quantity!</h3>
+    <table class="table">
+        <thead class="dashboard-headings" style="color: red">
+        <tr>
+            <td>Drug</td>
+            <td>NDC</td>
+            <td>Manufacturer</td>
+            <td>QOH</td>
+        </tr>
+        </thead>
+        <tbody>
+        <?foreach ($negative as $one) {?>
+            <tr>
+                <td><?=$one['d_name']?></td>
+                <td><?=$one['d_code']?></td>
+                <td><?=$one['d_manufacturer']?></td>
+                <td><?=$one['d_onHand']?></td>
+            </tr>
+        <?}?>
+        </tbody>
+    </table>
+	-->
+<?}?>
+
+<h3>Audits</h3>
+<table class="table table-striped">
+    <thead class="dashboard-headings">
+    <tr>
+        <td>Date</td>
+        <td>Drug Name</td>
+        <td>NDC</td>
+        <td>Manufacturer</td>
+        <td>Expected QOH</td>
+        <td>Actual QOH</td>
+        <td>Difference</td>
+        <td>Username</td>
+        <td>Notes</td>
+    </tr>
+    </thead>
+    <tbody>
+    <?foreach ($audits as $one) {?>
+        <tr>
+            <td><?=date('m-d-Y', $one['e_date'])?></td>
+            <td><?=$one['d_name']?></td>
+            <td><?=$one['d_code']?></td>
+            <td><?=$one['d_manufacturer']?></td>
+            <td><?=$one['e_old']?></td>
+            <td><?=$one['e_new']?></td>
+            <td><?=$one['e_new']-$one['e_old']?></td>
+            <td><?=$one['username']?></td>
+            <td><?=$one['e_note']?></td>
+        </tr>
+    <?}?>
+    </tbody>
+</table>
+

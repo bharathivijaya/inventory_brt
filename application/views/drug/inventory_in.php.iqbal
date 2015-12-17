@@ -1,0 +1,47 @@
+<h2><?=$drug['d_name']?></h2>
+
+<a href="<?=base_url()?>drug/view_drug/<?=$drug['d_id']?>">Product Info</a> |
+<b>Inventory IN</b> |
+<a href="<?=base_url()?>drug/inventory_out/<?=$drug['d_id']?>">Inventory Out</a> |
+<a href="<?=base_url()?>drug/inventory_audit/<?=$drug['d_id']?>">Inventory Audit</a> |
+<?//if ($drug["d_lotTracking"]) { ?>
+<a href="<?=base_url()?>drug/lots/<?=$drug['d_id']?>">Inventory Lot Tracking</a> |
+<?// } ?>
+<a href="<?=base_url()?>drug/alerts/<?=$drug['d_id']?>">Alert History</a> |
+<a href="<?=base_url()?>drug/add_alert/<?=$drug['d_id']?>">Alert Settings</a> |
+<a href="<?=base_url()?>category/add_drug_category/<?= $drug['d_id'] ?>">Add Category</a>
+<br/><br/>
+<b>Starting Inventory in Units: </b><?= $drug['d_start'] ?>
+<br/><br/>
+<table class="table table-striped">
+	<thead class="dashboard-headings">
+		<tr>
+			<td>Date Entered</td>
+			<td>Vendor</td>
+			<td>Invoice #</td>
+			<td>Quantity IN</td>
+			<td>RX/Transaction #</td>
+			<td>Lot Number</td>
+			<td>Expiration Date</td>
+			<td>Cost/Pk</td>
+			<td>Cost/Unit</td>
+			<td>Quantity on Hand</td>
+		</tr>
+	</thead>
+	<tbody>
+	<?foreach ($inventory_in as $entry) { ?>
+		<tr>
+			<td><?= date("m/d/Y", $entry['e_date']) ?></td>
+			<td><?= $entry['v_name'] ?></td>
+			<td><?= $entry['e_invoice'] ?></td>
+			<td><?= $entry['e_new'] - $entry["e_old"] ?></td>
+			<td><?= $entry['e_rx'] ?></td>
+			<td><?= $entry['e_lot'] ?></td>
+			<td><? if (!empty($entry['e_lot'])) echo date("m/d/Y", $entry['e_expiration']) ?></td>
+			<td><?= $entry['e_costPack'] ?></td>
+			<td><?= round($entry['e_costPack'] / $drug['d_size'], 2) ?></td>
+			<td><?= $entry['e_new'] ?></td>
+		</tr>
+	<? } ?>
+	</tbody>
+</table>

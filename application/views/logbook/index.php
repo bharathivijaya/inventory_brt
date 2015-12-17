@@ -1,0 +1,15 @@
+<div class="row">
+    <h3>New entry</h3>
+    <form action="<?=base_url()?>logbook/new_entry" method="post" class="smallform">
+        <div class="form-group">
+            <label>Select entry type</label>
+            <select name="type" class="form-control">
+                <option value="in">Inventory In</option>
+                <option value="out">Inventory Out</option>
+                <option value="audit">Inventory Audit</option>
+               <!-- <option value="edit">Inventory Edit</option>-->
+            </select>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Create">
+    </form>
+</div>

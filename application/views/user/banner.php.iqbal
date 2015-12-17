@@ -1,0 +1,15 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Tan4ik
+ * Date: 17.04.15
+ * Time: 22:36
+ */
+?>
+<img src="<?=base_url()?>images/banners/<?=$banner['b_image']?>" alt="Advertisement" width="<?=$banner['size']['w']?>" height="<?=$banner['size']['h']?>">
+<br/>
+<? if($this->session->userdata('type') == 'admin') {?>
+    <a href="<?=base_url()?>admin/" class="btn btn-lg btn-success">Continue</a>
+<?} else {?>
+<a href="<?=base_url()?>user/profile" class="btn btn-lg btn-success">Continue</a>
+<?}?>

@@ -1,0 +1,372 @@
+<style>table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+    content: " \25B4\25BE" 
+}
+.css_right {float:right}</style><script type="text/javascript" src="<?php echo base_url();?>assets/js/sortable.js"></script>
+
+
+
+<table class="table table-striped" >
+<h3>Alerts</h3>
+
+	<thead class="dashboard-headings">
+	<tr>
+		<td>Alert Type</td>
+		<td>Product Name</td>
+		<td>Product NDC</td>
+		<td>Manufacturer</td>
+		<td>QOH</td>
+		<td>Lot Number</td>
+		<td>Expiration Date</td>
+		<td>Re-order Qty</td>
+		<td>Audit Date Due</td>
+		<td>Action</td>
+	</tr>
+	</thead>
+	<tbody>
+	<?foreach ($alerts as $alert) { ?>
+		<tr>
+			<td><?= @$alert['alertType'] ?></td>
+			<td><?= @$alert['productName'] ?></td>
+			<td><?= @$alert['productNDC'] ?></td>
+			<td><?= @$alert['manufacturer'] ?></td>
+			<td><?= @$alert['qoh'] ?></td>
+			<td><?= @$alert['lotNumber'] ?></td>
+			<td><?= @$alert['expirationDate'] ?></td>
+			<td><?= @$alert['reOrderQty'] ?></td>
+			<td><?= @$alert['auditDateDue'] ?></td>
+			<td>
+				<a href="<?php echo base_url();?>drug/view_drug/<?= $alert["drugId"] ?>">Edit</a>,
+				<a href="<?php echo base_url();?>logbook/add_entry_audit/<?= @$alert['productNDC'] ?>">Inventory Audit</a>, <br/>
+				<a href="<?php echo base_url();?>logbook/add_entry_in/<?= @$alert['productNDC'] ?>">Inventory In</a>
+			</td>
+		</tr>
+	<? } ?>
+	</tbody>
+</table>
+
+<h3>Entries</h3>
+<table>
+	<form name="entriessearchform" method="post" action="">
+	<tr style="background-color:white;border:0px;"><td>Start Date <input type="text" id="fromDate" value="<?php echo date('m/d/Y',$this->session->userdata('from_date'));?>" name="fromDate" class="datetimeST3 form-control" ></td>
+	<td>End Date <input type="text" id="toDate" name="toDate" value="<?php echo date('m/d/Y',$this->session->userdata('to_date'));?>" class="datetimeST4 form-control" ></td>
+	<td> <br><input  type="submit" value="Search" name="Search" class="btn btn-xs btn-primary"></td></tr>
+	</form></table>
+<?php if(isset($entries)) { ?>
+<div  id="report">
+  <table class="table table-striped table-hover dt-responsive display" style="width:100%" cellspacing="0"   id="myTable">
+    <thead style="font-weight: bold">
+      <tr>
+        <?foreach ($labels as $l) {
+		if($l=='Status' or $l=='Deleted Date' ) continue;?>
+        <td><?php echo $l ?></td>
+        <?}?>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($entries as $entry) {?>
+      <tr class="units">
+        <td><?php echo date('m-d-Y', $entry->e_date) ?></td>
+        <td><?php if($entry->e_type == 'edit') 
+			{ 
+			echo strtoupper($entry->e_out == 0 ? ' In ('.$entry->e_type.')' : 'Out ('.$entry->e_type.')');  
+			} 
+			else 
+			{ 
+			echo strtoupper($entry->e_type =='new' ? 'in' : $entry->e_type); 
+			} ?></td>
+		 
+        <td><?php echo $entry->e_rx.$entry->e_invoice; ?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->total_drug_codes)?></td>
+        <td style="white-space:nowrap;overflow: hidden;max-width:100px;"><?php echo str_replace(',','<br/>',$entry->d_name); ?></td>
+        <td><?php echo $entry->v_name; ?></td>
+        <td><?php  if ($entry->e_type =='new' || $entry->e_out == 0) {               
+                echo ($entry->total_new_qty - $entry->total_old_qty);
+            } ?></td>
+        <td><?php echo $entry->e_out_total; ?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->total_lots)?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->e_expiration); ?></td>
+        
+        <td><?php  if ($entry->e_last_edit_date == 0) {
+
+                echo '';
+            } else {
+                echo date('m-d-Y', $entry->e_last_edit_date);
+            } ?>
+        </td>
+        <td><?php echo $entry->username; ?></td>
+		<!--<td><?php if($entry->e_deleteddate==0 && $entry->e_status!=3) echo "NA"; else echo date('m-d-Y', $entry->e_deleteddate);?></td>-->
+		<!--<td><?php if($entry->e_status==1) echo "New";
+		if($entry->e_status==2) echo "Edit";
+		if($entry->e_status==3) echo "Reversed"; ?></td>-->
+        <td class="datatable-nosort"><div class="btn-group">
+           <?php if($entry->e_out != 0 ) { ?>
+          <form method="post" action="<?php echo base_url();?>edit_transaction/edit_entry_out/<?php echo str_replace(',','-',$entry->total_entry_ids); ?>">
+		  <input type="hidden" id="fromdashboard" name="fromdashboard" value="1">
+<input type="submit" value="View Transaction"  class="btn btn-primary btn-xs">
+</form>   
+     <?php } else { ?>  
+ <form method="post" action="<?php echo base_url();?>edit_transaction/edit_entry_in/<?php echo str_replace(',','-',$entry->total_entry_ids); ?>">
+		  <input type="hidden" id="fromdashboard" name="fromdashboard" value="1">
+<input type="submit" value="View Transaction"  class="btn btn-primary btn-xs">
+</form>      
+<?php } ?>
+             <!--<?php if($entry->e_out != 0 ) { ?>
+              <a href="<?=base_url()?>edit_transaction/edit_entry_out/<?php echo $entry->total_entry_ids; ?>">  <button type="button" class="btn btn-success dropdown-toggle btn-xs" >view/edit</button></a>
+               <?php } else { ?>
+               <a href="<?=base_url()?>edit_transaction/edit_entry_in/<?php echo $entry->total_entry_ids; ?>">  <button type="button" class="btn btn-success dropdown-toggle btn-xs" >view/edit</button></a>
+               <?php }?>-->
+              
+          
+          </div></td>
+      </tr>
+      <?php }?>
+    </tbody>
+  </table>
+  
+</div>
+
+<?php }?>
+<?if (!empty($negative)){ ?>
+	<!--
+    <h3>Alert! Negative quantity!</h3>
+    <table class="table">
+        <thead class="dashboard-headings" style="color: red">
+        <tr>
+            <td>Drug</td>
+            <td>NDC</td>
+            <td>Manufacturer</td>
+            <td>QOH</td>
+        </tr>
+        </thead>
+        <tbody>
+        <?foreach ($negative as $one) {?>
+            <tr>
+                <td><?=$one['d_name']?></td>
+                <td><?=$one['d_code']?></td>
+                <td><?=$one['d_manufacturer']?></td>
+                <td><?=$one['d_onHand']?></td>
+            </tr>
+        <?}?>
+        </tbody>
+    </table>
+	-->
+<?}?>
+
+<h3>Audits</h3>
+<table>
+	<form name="auditsearchform" method="post" action="">
+	<tr style="background-color:white;border:0px;"><td>Start Date <input type="text" id="date1" name="date1" value="<?php echo date('m/d/Y', $this->session->userdata('date1'));?>" class="datetimeST form-control" ></td>
+	<td>End Date <input type="text" id="date2" name="date2" value="<?php echo date('m/d/Y', $this->session->userdata('date2'));?>"class="datetimeST1 form-control" ></td>
+	<td> <br><input  type="submit" value="Search" name="Search" class="btn btn-xs btn-primary"></td></tr>
+	</form></table>
+<table class="table table-striped sortable">
+    <thead class="dashboard-headings">
+
+    <tr>
+        <th>Date</th>
+        <th>Drug Name</th>
+        <th>NDC</th>
+        <th>Manufacturer</th>
+        <th>Expected QOH</th>
+        <th>Actual QOH</th>
+        <th>Difference</th>
+        <th>Username</th>
+        <th>Notes</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?foreach ($audits as $one) {?>
+        <tr>
+            <td><?=date('m-d-Y', $one['e_date'])?></td>
+            <td><?=$one['d_name']?></td>
+            <td><?=$one['d_code']?>&nbsp;<a href="<?php echo base_url();?>logbook/viewlots/<?php echo $one['e_drugId'];?>">View Lots</a></td>
+            <td><?=$one['d_manufacturer']?></td>
+            <td><?=$one['e_old']?></td>
+            <td><?=$one['e_new']?></td>
+            <td><?=$one['e_new']-$one['e_old']?></td>
+            <td><?=$one['username']?></td>
+            <td><?=$one['e_note']?><?=$one['e_drugId'];?></td>
+        </tr>
+    <?}?>
+    </tbody>
+</table>
+<h3>Deleted Entries</h3>
+<?/*print($ndc_num); print_r($fields);*/?>
+<div id="report">
+<table>
+	<form name="deletedsearchform" method="post" action="">
+	<tr style="background-color:white;border:0px;"><td>Start Date <input type="text" id="ddate1" name="ddate1" value="<?php echo date('m/d/Y',$this->session->userdata('ddate1'));?>" class="form-control" ></td>
+	<td>End Date <input type="text" id="ddate2" name="ddate2" value="<?php echo date('m/d/Y',$this->session->userdata('ddate2'));?>" class="form-control" ></td>
+	<td> <br><input  type="submit" value="Search" name="Search" class="btn btn-xs btn-primary"></td></tr>
+	</form></table>
+<table class="table table-striped sortable">
+    <thead style="font-weight: bold">
+        <tr>
+        <th>Date Deleted</th>
+		<th>Transaction  Type</th>
+		<th>Rx/ Trans/ Invoice #</th>
+        <th>NDC</th>
+       <th>Name</th>
+        <th>Qty In</th>
+        <th>Qty Out</th>
+        <th>Lot #</th>
+        <th>Exp Date</th>
+		<th>User Name</th>
+		<th>Vendor</th>
+       <!-- <th>Notes</th>-->
+		<th class="datatable-nosort">Action</th>
+    </tr>
+    </thead>
+	<tbody>
+ <?php foreach ($deletedtrans as $entry) {?>
+      <tr class="units">
+
+        <td><?php echo date('m-d-Y', $entry->e_deleteddate) ?></td>
+        <td>DELETED <?php if($entry->e_type == 'edit') 
+			{ 
+			echo strtoupper($entry->e_out == 0 ? ' In ('.$entry->e_type.')' : 'Out ('.$entry->e_type.')');  
+			} 
+			else 
+			{ 
+			echo strtoupper($entry->e_type =='new' ? 'in' : $entry->e_type); 
+			} ?></td>
+		 
+        <td><?php echo $entry->e_rx.$entry->e_invoice; ?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->total_drug_codes)?></td>
+        <td style="white-space:nowrap;overflow: hidden;max-width:100px;"><?php echo str_replace(',','<br/>',$entry->d_name); ?></td>
+   
+        <td><?php  if ($entry->e_type =='new' || $entry->e_out == 0) {               
+                echo ($entry->total_new_qty - $entry->total_old_qty);
+            } ?></td>
+        <td><?php echo $entry->e_out_total; ?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->total_lots)?></td>
+        <td><?php echo str_replace(',','<br/>',$entry->e_expiration); ?></td>
+        
+       <!-- <td><?php  if ($entry->e_last_edit_date == 0) {
+
+                echo '';
+            } else {
+                echo date('m-d-Y', $entry->e_last_edit_date);
+            } ?>
+        </td>-->
+        <td><?php echo $entry->username; ?></td>
+		     <td><?php echo $entry->v_name; ?></td>
+		<!--<td><?php if($entry->e_deleteddate==0 && $entry->e_status!=3) echo "NA"; else echo date('m-d-Y', $entry->e_deleteddate);?></td>-->
+		<!--<td><?php if($entry->e_status==1) echo "New";
+		if($entry->e_status==2) echo "Edit";
+		if($entry->e_status==3) echo "Reversed"; ?></td>-->
+        <td class="viewbut">
+         
+          <form method="post" action="<?php echo base_url();?>edit_transaction/deletedtransaction_details/<?php echo $entry->e_id; ?>">
+		  <input type="hidden" id="fromdashboard" name="fromdashboard" value="1">
+<input type="submit" value="View Transaction"  class="btn btn-primary btn-xs">
+</form>   
+</td>
+      </tr>
+      <?php }
+	?>
+</tbody>
+</table>
+<br><br>
+
+<script>
+	
+    $(document).ready(function() {
+	
+   
+	   $("#ddate1").datepicker({
+		 pickDate: true,
+        pickTime: false,
+        format: 'MM/DD/YYYY',
+        numberOfMonths: 1,
+			maxDate:new Date(),
+        onSelect: function(selected) {
+			  var date=$("#ddate1").datepicker('getDate');
+			  var days=0;
+            date.setDate(date.getDate()+parseInt(days));
+          $("#ddate2").datepicker("option","minDate", date)
+        }
+    });
+    $("#ddate2").datepicker({ 
+		 pickDate: true,
+        pickTime: false,
+        format: 'MM/DD/YYYY',
+        numberOfMonths: 1,
+			maxDate:new Date(),
+        onSelect: function(selected) {
+           $("#ddate1").datepicker("option","maxDate", selected)
+        }
+    });  
+
+   // alert("am here");
+	   	$('.datetimeST').datetimepicker({
+		pickDate: true,
+		pickTime: false,
+		format: 'MM/DD/YYYY',
+		maxDate: new Date(),
+	onSelect : function(x, u){
+			 $(this).focus(); 
+   $(this).datepicker("hide");     
+},
+onClose: function(e){
+e.preventDefault();
+}
+});
+	   	$('.datetimeST3').datetimepicker({
+		pickDate: true,
+		pickTime: false,
+		format: 'MM/DD/YYYY',
+		maxDate: new Date(),
+	//onSelect : function(x, u){
+			  onSelect: function(selected) {
+			  var date=$("#fromDate").datetimepicker('getDate');
+			  alert(date);
+			  var days=0;
+            date.setDate(date.getDate()+parseInt(days));
+          $(".datetimeST4").datetimepicker("option","minDate", date);
+		  	 $(this).focus(); 
+   $(this).datepicker("hide");     
+        },
+		
+
+onClose: function(e){
+e.preventDefault();
+}
+});
+	   	$('.datetimeST4').datetimepicker({
+		pickDate: true,
+		pickTime: false,
+		format: 'MM/DD/YYYY',
+			//minDate:   $(".datetimeST3").datetimepicker("option","minDate", date),
+		maxDate: new Date(),
+	onSelect : function(x, u){
+			 $(this).focus(); 
+   $(this).datepicker("hide");     
+},
+onClose: function(e){
+e.preventDefault();
+}
+});
+	  $('.datetimeST1').datetimepicker({
+        pickDate: true,
+        pickTime: false,
+        format: 'MM/DD/YYYY',
+	  maxDate: '<?=date('m-d-Y', strtotime('today'))?>'
+
+    });
+	 $('#myTable').DataTable( {
+        "paging":   true,
+        "ordering": true,
+        "info":     false,
+		"filter" : false,
+		"responsive": true ,
+		"aLengthMenu": [[10, 20, 50, -1], [10, 20, 50, "All"]],
+		"pagingType": "simple_numbers",
+		"aoColumnDefs": [{
+      	"bSortable": false, 
+      	"aTargets": [6,7,8,9,10,11,12]
+    }]
+    } );
+	
+	});
+</script>

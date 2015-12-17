@@ -1,0 +1,83 @@
+<h2><?=$drug['d_name']?></h2>
+
+<a href="<?=base_url()?>drug/view_drug/<?=$drug['d_id']?>">Product Info</a> |
+<a href="<?=base_url()?>drug/inventory_in/<?=$drug['d_id']?>">Inventory In</a> |
+<a href="<?=base_url()?>drug/inventory_out/<?=$drug['d_id']?>">Inventory Out</a> |
+<a href="<?=base_url()?>drug/inventory_audit/<?=$drug['d_id']?>">Inventory Audit</a> |
+<b>Inventory Lot Tracking</b> |
+<a href="<?=base_url()?>drug/alerts/<?=$drug['d_id']?>">Alert History</a> |
+<a href="<?=base_url()?>drug/add_alert/<?=$drug['d_id']?>">Alert Settings</a> |
+<a href="<?=base_url()?>category/add_drug_category/<?= $drug['d_id'] ?>">Add Category</a>
+<br/><br/>
+<div class="form-group">
+    <div class="checkbox">
+        <label>
+            <input name="auditNegativeInventory" id="lotTrack" onchange="setLotTracking();" value="1" type="checkbox" <? if ($drug['d_lotTracking'] == 1) echo "checked"; ?>> Lot tracking
+        </label>
+    </div>
+</div><br>
+<table class="table table-striped">
+	<thead class="dashboard-headings">
+	<tr>
+		<td>Lot Number</td>
+		<td>Expiration Date</td>
+		<td>QOH per Lot Number</td>
+		<td style="width: 10%;">Status</td>
+		<td style="width: 10%;">Edit</td>
+	</tr>
+	</thead>
+	<tbody>
+	<? $total = 0; foreach ($lots as $lot) { $total += $lot["count"] * 1; ?>
+		<tr>
+			<td><?= $lot['lotName'] ?></td>
+			<td><?= date("m/d/Y", $lot['expirationDate']) ?></td>
+			<td><?= $lot["count"] ?></td>
+			<td id="lot_status_<?= $lot["id"] ?>"><? if ($lot["active"]) echo "Active"; else echo "Inactive"; ?></td>
+			<td><a id="lot_edit_<?= $lot["id"] ?>" onclick="updateLotStatus(<?= $lot["id"] ?>);" href="javascript://void();"><? if ($lot["active"]) echo "Deactivate"; else echo "Activate"; ?></a></td>
+		</tr>
+	<? } ?>
+	</tbody>
+</table>
+
+<b>Total Quantity of Lots: </b> <?= $total ?><br/>
+
+<script>
+	function updateLotStatus(lot_id)
+	{
+		$.ajax({
+			url: '<?=base_url()?>drug/swapLotStatus',
+			dataType: "text",
+			method: "POST",
+			data: {
+				"lot_id": lot_id
+			},
+			success: function(data)
+			{
+				if ($("#lot_edit_" + lot_id).html() == "Deactivate")
+				{
+					$("#lot_edit_" + lot_id).html("Activate");
+					$("#lot_status_" + lot_id).html("Deactivate");
+				} else {
+					$("#lot_edit_" + lot_id).html("Deactivate");
+					$("#lot_status_" + lot_id).html("Activate");
+				}
+			}
+		});
+	}
+
+    function setLotTracking(val)
+    {
+        $.ajax({
+            url: '<?=base_url()?>drug/setLotTracking',
+            dataType: "text",
+            method: "POST",
+            data: {
+                "drug_id": <?= @$drug["d_id"] ?>,
+                "status": $("#lotTrack").prop( "checked" )
+            },
+            success: function(data) {
+                //alert(data);
+            }
+        });
+    }
+</script>
